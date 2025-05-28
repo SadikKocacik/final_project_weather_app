@@ -6,10 +6,12 @@ import PopularCitiesScreen from './screens/PopularCitiesScreen';
 import { Ionicons } from '@expo/vector-icons';
 import FavoriteCitiesScreen from './screens/FavoriteCitiesScreen';
 const Tab = createBottomTabNavigator();
+import { FavoritesProvider } from './components/FavoritesContext';
 
 export default function App() {
   return (
-    <NavigationContainer>
+    <FavoritesProvider>
+      <NavigationContainer>
       <Tab.Navigator
         screenOptions={({ route }) => ({
           tabBarIcon: ({ color, size }) => {
@@ -18,6 +20,8 @@ export default function App() {
               iconName = 'home';
             } else if (route.name === 'Popüler Şehirler') {
               iconName = 'globe';
+            } else if (route.name === 'Favoriler') {
+              iconName = 'heart';
             }
             return <Ionicons name={iconName} size={size} color={color} />;
           },
@@ -30,5 +34,6 @@ export default function App() {
         <Tab.Screen name="Favoriler" component={FavoriteCitiesScreen} />
       </Tab.Navigator>
     </NavigationContainer>
+    </FavoritesProvider>
   );
 }

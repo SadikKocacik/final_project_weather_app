@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, Image, StyleSheet, TouchableOpacity } from 'react-native';
-
+import { useFavorites } from '../components/FavoritesContext';
+import { Ionicons } from '@expo/vector-icons';
 const WeatherScreen = () => {
   const [city, setCity] = useState('');
   const [weatherData, setWeatherData] = useState(null);
-
+  const { addToFavorites } = useFavorites();  
   const fetchWeather = async () => {
     try {
       const API_KEY = '1e6470aac8b245f781330e8a02b960cf'; // Örn: OpenWeatherMap
@@ -17,7 +18,11 @@ const WeatherScreen = () => {
       console.log('Hata:', error);
     }
   };
-
+const handleAddToFavorites = () => {
+    if (weatherData) {
+      addToFavorites(weatherData); // tüm weather objesini ekliyoruz
+    }
+  };
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Hava Durumu</Text>
@@ -49,6 +54,13 @@ const WeatherScreen = () => {
             <Text>Nem: {weatherData.main.humidity}%</Text>
             <Text>Rüzgar: {weatherData.wind.speed} m/s</Text>
           </View>
+          <View>
+      
+      <TouchableOpacity onPress={handleAddToFavorites} style={styles.favoriteButton}>
+        <Ionicons name="heart-outline" size={24} color="white" />
+        <Text style={styles.buttonText}>Favorilere Ekle</Text>
+      </TouchableOpacity>
+    </View>
         </View>
       )}
     </View>
@@ -117,6 +129,21 @@ const styles = StyleSheet.create({
     backgroundColor: '#ffffffaa',
     padding: 10,
     borderRadius: 10,
+  },
+  favoriteButton: {
+    backgroundColor: '#e63946',
+    padding: 12,
+    margin: 16,
+    borderRadius: 8,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  buttonText: {
+    color: '#fff',
+    marginLeft: 8,
+    fontSize: 16,
+    fontWeight: 'bold',
   },
 });
 

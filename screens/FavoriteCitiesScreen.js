@@ -1,13 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, FlatList, StyleSheet, Image, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons'; // expo kullanıyorsan bu paket zaten var
+import { useFavorites } from '../components/FavoritesContext';
 
 const favoriteCities = ['Istanbul', 'Amsterdam', 'Rome', 'Seoul', 'Sydney'];
 
 const FavoriteCitiesScreen = () => {
   const [weatherData, setWeatherData] = useState([]);
   const [loading, setLoading] = useState(true);
-
+  const { favorites } = useFavorites();
   useEffect(() => {
     fetchFavoriteCitiesWeather();
   }, []);
@@ -41,7 +42,7 @@ const FavoriteCitiesScreen = () => {
   return (
     <View style={styles.container}>
       <FlatList
-        data={weatherData}
+        data={favorites}
         keyExtractor={(item, index) => item?.id?.toString() || index.toString()}
         renderItem={({ item }) => (
           <View style={styles.card}>
