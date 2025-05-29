@@ -46,10 +46,10 @@ const FavoriteCitiesScreen = () => {
     fetchFavoriteCitiesWeather();
   };
 
-  const handleRemoveFromFavorites = (city) => {
+  const handleRemoveFromFavorites = (weatherData) => {
     Alert.alert(
       "Favorilerden Çıkar",
-      `${city.name} şehrini favorilerden çıkarmak istediğinize emin misiniz?`,
+      `${weatherData.name} şehrini favorilerden çıkarmak istediğinize emin misiniz?`,
       [
         {
           text: "İptal",
@@ -58,7 +58,11 @@ const FavoriteCitiesScreen = () => {
         {
           text: "Evet, Çıkar",
           style: "destructive",
-          onPress: () => removeFromFavorites(city.id)
+          onPress: () => {
+            removeFromFavorites(weatherData.id);
+            // Kullanıcıya geri bildirim göster
+            Alert.alert('Başarılı', `${weatherData.name} favorilerden çıkarıldı.`);
+          }
         }
       ]
     );

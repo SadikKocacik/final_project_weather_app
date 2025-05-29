@@ -20,7 +20,6 @@ const WeatherCard = ({
         {showFavoriteButton && (
           <TouchableOpacity 
             onPress={() => onFavoritePress(weatherData)}
-            disabled={isFavorite}
             style={styles.favoriteButton}
           >
             <Ionicons 
