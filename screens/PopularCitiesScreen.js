@@ -1,16 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { 
-  View, 
-  Text, 
-  FlatList, 
-  StyleSheet, 
-  Image, 
-  ActivityIndicator, 
-  TouchableOpacity,
-  RefreshControl 
-} from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { View, StyleSheet, FlatList, RefreshControl } from 'react-native';
 import { useFavorites } from '../components/FavoritesContext';
+import WeatherCard from '../components/WeatherCard';
+import LoadingIndicator from '../components/LoadingIndicator';
+import EmptyState from '../components/EmptyState';
 
 const cities = [
   'Istanbul', 
@@ -36,7 +29,7 @@ const PopularCitiesScreen = () => {
     try {
       const promises = cities.map(city =>
         fetch(
-          `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${API_KEY}&units=metric`
+          `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${API_KEY}&units=metric&lang=tr`
         ).then(res => res.json())
       );
       const results = await Promise.all(promises);
@@ -59,78 +52,32 @@ const PopularCitiesScreen = () => {
     fetchAllCitiesWeather();
   };
 
-  const handleAddToFavorites = (city) => {
-    addToFavorites(city);
-  };
-
   if (loading) {
-    return (
-      <View style={styles.loader}>
-        <ActivityIndicator size="large" color="#4682b4" />
-      </View>
-    );
+    return <LoadingIndicator />;
   }
 
-  const renderWeatherCard = ({ item }) => (
-    <View style={styles.card}>
-      <View style={styles.cardHeader}>
-        <View>
-          <Text style={styles.city}>{item.name}</Text>
-          <Text style={styles.country}>{item.sys.country}</Text>
-        </View>
-        <TouchableOpacity 
-          onPress={() => handleAddToFavorites(item)}
-          disabled={isFavorite && isFavorite(item.id)}
-        >
-          <Ionicons 
-            name={isFavorite && isFavorite(item.id) ? "heart" : "heart-outline"} 
-            size={24} 
-            color={isFavorite && isFavorite(item.id) ? "#e63946" : "#4682b4"} 
-          />
-        </TouchableOpacity>
-      </View>
-
-      <View style={styles.weatherInfo}>
-        <Image
-          style={styles.icon}
-          source={{
-            uri: `https://openweathermap.org/img/wn/${item.weather[0].icon}@4x.png`,
-          }}
-        />
-        <View style={styles.tempContainer}>
-          <Text style={styles.temp}>{Math.round(item.main.temp)}°C</Text>
-          <Text style={styles.description}>{item.weather[0].main}</Text>
-        </View>
-      </View>
-
-      <View style={styles.detailsContainer}>
-        <View style={styles.detailItem}>
-          <Ionicons name="water-outline" size={20} color="#4682b4" />
-          <Text style={styles.detailValue}>{item.main.humidity}%</Text>
-          <Text style={styles.detailLabel}>Nem</Text>
-        </View>
-
-        <View style={styles.detailItem}>
-          <Ionicons name="speedometer-outline" size={20} color="#4682b4" />
-          <Text style={styles.detailValue}>{item.main.pressure}</Text>
-          <Text style={styles.detailLabel}>Basınç</Text>
-        </View>
-
-        <View style={styles.detailItem}>
-          <Ionicons name="thunderstorm-outline" size={20} color="#4682b4" />
-          <Text style={styles.detailValue}>{Math.round(item.wind.speed)}</Text>
-          <Text style={styles.detailLabel}>Rüzgar</Text>
-        </View>
-      </View>
-    </View>
-  );
+  if (weatherList.length === 0) {
+    return (
+      <EmptyState
+        icon="globe-outline"
+        title="Veri Bulunamadı"
+        message="Popüler şehirlerin hava durumu bilgileri alınamadı. Lütfen daha sonra tekrar deneyin."
+      />
+    );
+  }
 
   return (
     <View style={styles.container}>
       <FlatList
         data={weatherList}
         keyExtractor={(item) => item.id.toString()}
-        renderItem={renderWeatherCard}
+        renderItem={({ item }) => (
+          <WeatherCard
+            weatherData={item}
+            onFavoritePress={addToFavorites}
+            isFavorite={isFavorite && isFavorite(item.id)}
+          />
+        )}
         contentContainerStyle={styles.listContainer}
         refreshControl={
           <RefreshControl
@@ -152,87 +99,6 @@ const styles = StyleSheet.create({
   },
   listContainer: {
     padding: 16,
-  },
-  loader: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  card: {
-    backgroundColor: '#fff',
-    marginBottom: 16,
-    borderRadius: 16,
-    padding: 16,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 4,
-  },
-  cardHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: 12,
-  },
-  city: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#333',
-  },
-  country: {
-    fontSize: 16,
-    color: '#666',
-    marginTop: 2,
-  },
-  weatherInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 16,
-  },
-  icon: {
-    width: 100,
-    height: 100,
-  },
-  tempContainer: {
-    flex: 1,
-    alignItems: 'flex-end',
-  },
-  temp: {
-    fontSize: 36,
-    fontWeight: 'bold',
-    color: '#333',
-  },
-  description: {
-    fontSize: 18,
-    color: '#666',
-    textTransform: 'capitalize',
-  },
-  detailsContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    backgroundColor: '#f8f9fa',
-    borderRadius: 12,
-    padding: 12,
-  },
-  detailItem: {
-    alignItems: 'center',
-    flex: 1,
-  },
-  detailValue: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#333',
-    marginTop: 4,
-  },
-  detailLabel: {
-    fontSize: 12,
-    color: '#666',
-    marginTop: 2,
   },
 });
 
