@@ -1,24 +1,27 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, FlatList, StyleSheet, Image, ActivityIndicator } from 'react-native';
-import { Ionicons } from '@expo/vector-icons'; // expo kullanıyorsan bu paket zaten var
+import { View, Text, FlatList, StyleSheet, Image, ActivityIndicator, TouchableOpacity, Alert } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useFavorites } from '../components/FavoritesContext';
 
-const favoriteCities = ['Istanbul', 'Amsterdam', 'Rome', 'Seoul', 'Sydney'];
-
 const FavoriteCitiesScreen = () => {
-  const [weatherData, setWeatherData] = useState([]);
   const [loading, setLoading] = useState(true);
-  const { favorites } = useFavorites();
+  const { favorites, removeFromFavorites } = useFavorites();
+  const [weatherData, setWeatherData] = useState([]);
+
   useEffect(() => {
-    fetchFavoriteCitiesWeather();
-  }, []);
+    if (favorites.length > 0) {
+      fetchFavoriteCitiesWeather();
+    } else {
+      setLoading(false);
+    }
+  }, [favorites]);
 
   const fetchFavoriteCitiesWeather = async () => {
     const API_KEY = '1e6470aac8b245f781330e8a02b960cf';
     try {
-      const promises = favoriteCities.map(city =>
+      const promises = favorites.map(city =>
         fetch(
-          `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${API_KEY}&units=metric`
+          `https://api.openweathermap.org/data/2.5/weather?q=${city.name}&appid=${API_KEY}&units=metric`
         ).then(res => res.json())
       );
       const results = await Promise.all(promises);
@@ -31,6 +34,24 @@ const FavoriteCitiesScreen = () => {
     }
   };
 
+  const handleRemoveFromFavorites = (city) => {
+    Alert.alert(
+      "Favorilerden Çıkar",
+      `${city.name} şehrini favorilerden çıkarmak istediğinize emin misiniz?`,
+      [
+        {
+          text: "İptal",
+          style: "cancel"
+        },
+        {
+          text: "Evet, Çıkar",
+          style: "destructive",
+          onPress: () => removeFromFavorites(city.id)
+        }
+      ]
+    );
+  };
+
   if (loading) {
     return (
       <View style={styles.loader}>
@@ -39,23 +60,40 @@ const FavoriteCitiesScreen = () => {
     );
   }
 
+  if (favorites.length === 0) {
+    return (
+      <View style={styles.emptyContainer}>
+        <Text style={styles.emptyText}>Henüz favori şehir eklenmemiş</Text>
+      </View>
+    );
+  }
+
   return (
     <View style={styles.container}>
       <FlatList
         data={favorites}
-        keyExtractor={(item, index) => item?.id?.toString() || index.toString()}
+        keyExtractor={(item) => item.id.toString()}
         renderItem={({ item }) => (
           <View style={styles.card}>
             <View style={styles.cardHeader}>
               <Text style={styles.city}>{item.name}</Text>
-              <Ionicons name="heart" size={24} color="#e63946" /> {/* Kalp ikonu */}
+              <TouchableOpacity 
+                onPress={() => handleRemoveFromFavorites(item)}
+                style={styles.favoriteButton}
+              >
+                <Ionicons name="heart" size={24} color="#e63946" />
+              </TouchableOpacity>
             </View>
-            <Image
-              style={styles.icon}
-              source={{ uri: `https://openweathermap.org/img/wn/${item.weather[0].icon}@2x.png` }}
-            />
-            <Text style={styles.temp}>{Math.round(item.main.temp)}°C</Text>
-            <Text style={styles.description}>{item.weather[0].main}</Text>
+            {item.weather && item.weather[0] && (
+              <>
+                <Image
+                  style={styles.icon}
+                  source={{ uri: `https://openweathermap.org/img/wn/${item.weather[0].icon}@2x.png` }}
+                />
+                <Text style={styles.temp}>{Math.round(item.main.temp)}°C</Text>
+                <Text style={styles.description}>{item.weather[0].main}</Text>
+              </>
+            )}
           </View>
         )}
       />
@@ -71,6 +109,18 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff8f0',
     paddingTop: 20,
   },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#fff8f0',
+  },
+  emptyText: {
+    fontSize: 18,
+    color: '#666',
+    textAlign: 'center',
+    paddingHorizontal: 20,
+  },
   loader: {
     flex: 1,
     justifyContent: 'center',
@@ -83,6 +133,13 @@ const styles = StyleSheet.create({
     padding: 16,
     borderRadius: 12,
     elevation: 3,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
   },
   cardHeader: {
     flexDirection: 'row',
@@ -92,6 +149,10 @@ const styles = StyleSheet.create({
   city: {
     fontSize: 22,
     fontWeight: 'bold',
+    color: '#333',
+  },
+  favoriteButton: {
+    padding: 8,
   },
   icon: {
     width: 80,
@@ -110,5 +171,6 @@ const styles = StyleSheet.create({
     textTransform: 'capitalize',
     color: '#666',
     textAlign: 'center',
+    marginTop: 4,
   },
 });
