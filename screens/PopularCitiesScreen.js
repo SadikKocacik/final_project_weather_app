@@ -117,7 +117,7 @@ const PopularCitiesScreen = () => {
         </View>
 
         <View style={styles.detailItem}>
-          <Ionicons name="wind" size={20} color="#4682b4" />
+          <Ionicons name="thunderstorm-outline" size={20} color="#4682b4" />
           <Text style={styles.detailValue}>{Math.round(item.wind.speed)}</Text>
           <Text style={styles.detailLabel}>Rüzgar</Text>
         </View>

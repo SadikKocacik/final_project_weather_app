@@ -128,7 +128,7 @@ const WeatherScreen = () => {
               </View>
 
               <View style={styles.detailItem}>
-                <Ionicons name="wind" size={24} color="#4682b4" />
+                <Ionicons name="thunderstorm-outline" size={24} color="#4682b4" />
                 <Text style={styles.detailText}>Rüzgar</Text>
                 <Text style={styles.detailValue}>{weatherData.wind.speed} m/s</Text>
               </View>
